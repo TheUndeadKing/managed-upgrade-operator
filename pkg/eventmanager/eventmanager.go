@@ -156,7 +156,16 @@ func (s *eventManager) Notify(state notifier.MuoState) error {
 	if err != nil {
 		return fmt.Errorf("can't send notification '%s': %v", state, err)
 	}
-	s.metrics.UpdateMetricNotificationEventSent(uc.Name, string(state), uc.Spec.Desired.Version)
+
+	var version string
+	history := uc.Status.History.GetHistory(uc.Spec.Desired.Version)
+	if len(uc.Spec.Desired.Version) > 0 {
+		version = history.PrecedingVersion
+	} else {
+		version = uc.Spec.Desired.Version
+	}
+
+	s.metrics.UpdateMetricNotificationEventSent(uc.Name, string(state), version)
 
 	return nil
 }
